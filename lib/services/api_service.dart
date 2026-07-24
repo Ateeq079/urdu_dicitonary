@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../models/word_result.dart';
 import 'storage_service.dart';
+import 'wiktionary_service.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Result types
@@ -136,17 +137,32 @@ class ApiService {
   // ── Lookup ────────────────────────────────────────────────────────────────
 
   /// Look up [word] in [lang] ('en' or 'ur').
+  ///
+  /// - English words → Free Dictionary API (freedictionaryapi.com)
+  /// - Urdu words    → English Wiktionary (en.wiktionary.org, ~5k Urdu entries)
+  ///
   /// Returns a [LookupResult] with one of the four [LookupStatus] values.
   Future<LookupResult> lookup(String lang, String word) async {
     final trimmed = word.trim();
-    if (trimmed.isEmpty) {
-      return const LookupResult(LookupStatus.notFound);
+    if (trimmed.isEmpty) return const LookupResult(LookupStatus.notFound);
+
+    // Check cache first — both English and Urdu use the same cache layer.
+    final cached = _readCache(lang, trimmed);
+
+    if (lang == 'ur') {
+      return _lookupUrdu(trimmed, cached);
+    } else {
+      return _lookupEnglish(trimmed, cached);
     }
+  }
 
+  // ── English via freedictionaryapi.com ────────────────────────────────────
+
+  Future<LookupResult> _lookupEnglish(
+      String word, WordResult? cached) async {
     final uri = Uri.parse(
-      '$_base/$lang/${Uri.encodeComponent(trimmed)}?translations=true',
+      '$_base/en/${Uri.encodeComponent(word)}?translations=true',
     );
-
     try {
       final resp = await http.get(uri).timeout(const Duration(seconds: 20));
       if (resp.statusCode == 200) {
@@ -154,28 +170,48 @@ class ApiService {
             jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>;
         final result = WordResult.fromJson(json);
         if (result.isEmpty) {
-          // Genuine "no such word" — check cache for an older copy.
-          final cached = _readCache(lang, trimmed);
           if (cached != null && !cached.isEmpty) {
-            return LookupResult(
-              LookupStatus.staleCache,
-              data: cached,
-              fromCache: true,
-              cachedAt: _readCacheTimestamp(lang, trimmed),
-            );
+            return LookupResult(LookupStatus.staleCache,
+                data: cached,
+                fromCache: true,
+                cachedAt: _readCacheTimestamp('en', word));
           }
           return const LookupResult(LookupStatus.notFound);
         }
-        // Success: update cache and return fresh data.
-        await _writeCache(lang, trimmed, json);
+        await _writeCache('en', word, json);
         return LookupResult(LookupStatus.found, data: result);
       }
-      // Non-200: fall through to cache.
-      return _staleCacheOrOffline(lang, trimmed);
+      return _staleCacheOrOffline('en', word);
     } on TimeoutException {
-      return _staleCacheOrOffline(lang, trimmed);
+      return _staleCacheOrOffline('en', word);
     } catch (_) {
-      return _staleCacheOrOffline(lang, trimmed);
+      return _staleCacheOrOffline('en', word);
+    }
+  }
+
+  // ── Urdu via English Wiktionary ───────────────────────────────────────────
+
+  Future<LookupResult> _lookupUrdu(String word, WordResult? cached) async {
+    try {
+      final entry = await WiktionaryService.fetchUrdu(word);
+      if (entry != null) {
+        final result = WordResult(word: word, entries: [entry]);
+        // Persist to cache using existing cache layer.
+        await _writeCache('ur', word, result.toJson());
+        return LookupResult(LookupStatus.found, data: result);
+      }
+      // Wiktionary returned no Urdu section — try cache before giving up.
+      if (cached != null && !cached.isEmpty) {
+        return LookupResult(LookupStatus.staleCache,
+            data: cached,
+            fromCache: true,
+            cachedAt: _readCacheTimestamp('ur', word));
+      }
+      return const LookupResult(LookupStatus.notFound);
+    } on TimeoutException {
+      return _staleCacheOrOffline('ur', word);
+    } catch (_) {
+      return _staleCacheOrOffline('ur', word);
     }
   }
 

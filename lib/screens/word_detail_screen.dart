@@ -126,7 +126,7 @@ class _ResultView extends StatelessWidget {
           const SizedBox(height: 14),
         ],
         Text(
-          'Definitions from Free Dictionary (Wiktionary, CC BY-SA 4.0).',
+          'English definitions: Free Dictionary API (Wiktionary, CC BY-SA 4.0)\nUrdu definitions: English Wiktionary (CC BY-SA 4.0)',
           style: theme.textTheme.bodySmall
               ?.copyWith(color: theme.colorScheme.outline),
         ),
