@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/word_result.dart';
+import 'database_service.dart';
 import 'storage_service.dart';
 import 'wiktionary_service.dart';
 
@@ -193,14 +194,21 @@ class ApiService {
 
   Future<LookupResult> _lookupUrdu(String word, WordResult? cached) async {
     try {
+      // 1. Try local SQLite database first (Instant & Offline)
+      final localResult = await DatabaseService.lookupUrdu(word);
+      if (localResult != null) {
+        return LookupResult(LookupStatus.found, data: localResult);
+      }
+
+      // 2. Fallback to English Wiktionary API
       final entry = await WiktionaryService.fetchUrdu(word);
       if (entry != null) {
         final result = WordResult(word: word, entries: [entry]);
-        // Persist to cache using existing cache layer.
         await _writeCache('ur', word, result.toJson());
         return LookupResult(LookupStatus.found, data: result);
       }
-      // Wiktionary returned no Urdu section — try cache before giving up.
+
+      // 3. Try Cache
       if (cached != null && !cached.isEmpty) {
         return LookupResult(LookupStatus.staleCache,
             data: cached,
