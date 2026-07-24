@@ -46,9 +46,12 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: isUr
-            ? UrduText(widget.word,
+            ? UrduText(
+                widget.word,
                 textAlign: TextAlign.left,
-                style: const TextStyle(fontSize: 22))
+                semanticsLabel: widget.word,
+                style: const TextStyle(fontSize: 22),
+              )
             : Text(widget.word),
         actions: [_FavButton(word: widget.word, lang: widget.lang)],
       ),
@@ -76,7 +79,12 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
                 onRetry: _retry,
               );
             case LookupStatus.found:
-              return _ResultView(result: res.data!, fromCache: res.fromCache);
+            case LookupStatus.staleCache:
+              return _ResultView(
+                result: res.data!,
+                fromCache: res.fromCache,
+                cachedAt: res.cachedAt,
+              );
           }
         },
       ),
@@ -87,10 +95,15 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
 }
 
 class _ResultView extends StatelessWidget {
-  const _ResultView({required this.result, required this.fromCache});
+  const _ResultView({
+    required this.result,
+    required this.fromCache,
+    this.cachedAt,
+  });
 
   final WordResult result;
   final bool fromCache;
+  final DateTime? cachedAt;
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +116,9 @@ class _ResultView extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 12),
             child: _Banner(
               icon: Icons.offline_pin_rounded,
-              text: 'Showing a saved offline copy.',
+              text: cachedAt != null
+                  ? 'Offline — saved copy from ${_fmtDate(cachedAt!)}'
+                  : 'Showing a saved offline copy.',
             ),
           ),
         for (final entry in result.entries) ...[
@@ -173,9 +188,12 @@ class _EntryCard extends StatelessWidget {
                 runSpacing: 6,
                 children: urduTranslations
                     .map((w) => Chip(
-                          label: UrduText(w,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 18)),
+                          label: UrduText(
+                            w,
+                            textAlign: TextAlign.center,
+                            semanticsLabel: w,
+                            style: const TextStyle(fontSize: 18),
+                          ),
                         ))
                     .toList(),
               ),
@@ -193,9 +211,12 @@ class _EntryCard extends StatelessWidget {
                     .take(8)
                     .map((f) => Chip(
                           label: urdu
-                              ? UrduText(f,
+                              ? UrduText(
+                                  f,
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(fontSize: 16))
+                                  semanticsLabel: f,
+                                  style: const TextStyle(fontSize: 16),
+                                )
                               : Text(f),
                         ))
                     .toList(),
@@ -241,9 +262,12 @@ class _SenseTile extends StatelessWidget {
                       ?.copyWith(color: theme.colorScheme.primary)),
               Expanded(
                 child: defIsUrdu
-                    ? UrduText(sense.definition,
+                    ? UrduText(
+                        sense.definition,
                         textAlign: TextAlign.left,
-                        style: theme.textTheme.titleMedium)
+                        semanticsLabel: sense.definition,
+                        style: theme.textTheme.titleMedium,
+                      )
                     : Text(sense.definition,
                         style: theme.textTheme.titleMedium),
               ),
@@ -260,11 +284,14 @@ class _SenseTile extends StatelessWidget {
                   const SizedBox(width: 6),
                   Expanded(
                     child: isUrdu(ex)
-                        ? UrduText(ex,
+                        ? UrduText(
+                            ex,
                             textAlign: TextAlign.left,
+                            semanticsLabel: ex,
                             style: theme.textTheme.bodyMedium?.copyWith(
                                 fontStyle: FontStyle.italic,
-                                color: theme.colorScheme.onSurfaceVariant))
+                                color: theme.colorScheme.onSurfaceVariant),
+                          )
                         : Text(ex,
                             style: theme.textTheme.bodyMedium?.copyWith(
                                 fontStyle: FontStyle.italic,
@@ -299,9 +326,12 @@ class _WordChips extends StatelessWidget {
               .take(12)
               .map((w) => Chip(
                     label: isUrdu(w)
-                        ? UrduText(w,
+                        ? UrduText(
+                            w,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 16))
+                            semanticsLabel: w,
+                            style: const TextStyle(fontSize: 16),
+                          )
                         : Text(w),
                   ))
               .toList(),
@@ -384,12 +414,15 @@ class _FavButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    final scheme = Theme.of(context).colorScheme;
     final ref = WordRef(word: word, lang: lang);
     final fav = state.isFavorite(ref);
     return IconButton(
       tooltip: fav ? 'Remove from favorites' : 'Save to favorites',
-      icon: Icon(fav ? Icons.favorite : Icons.favorite_border,
-          color: fav ? Colors.redAccent : null),
+      icon: Icon(
+        fav ? Icons.favorite : Icons.favorite_border,
+        color: fav ? scheme.error : null,
+      ),
       onPressed: () {
         context.read<AppState>().toggleFavorite(ref);
         ScaffoldMessenger.of(context)
@@ -453,4 +486,13 @@ void openWord(BuildContext context, String word, String lang) {
   Navigator.of(context).push(MaterialPageRoute(
     builder: (_) => WordDetailScreen(word: word, lang: lang),
   ));
+}
+
+/// Format a [DateTime] as "24 Jul 2026" without the intl package.
+String _fmtDate(DateTime dt) {
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
 }

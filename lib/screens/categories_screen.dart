@@ -77,9 +77,12 @@ class CategoryWordsScreen extends StatelessWidget {
         itemBuilder: (context, i) {
           final w = words[i];
           return ListTile(
-            title: UrduText(w.urdu,
-                textAlign: TextAlign.left,
-                style: const TextStyle(fontSize: 24)),
+            title: UrduText(
+              w.urdu,
+              textAlign: TextAlign.left,
+              semanticsLabel: '${w.english}, ${w.roman}',
+              style: const TextStyle(fontSize: 24),
+            ),
             subtitle: Text('${w.english}  ·  ${w.roman}'),
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => openWord(context, w.urdu, 'ur'),

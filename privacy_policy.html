@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Lughat</title>
+  <meta name="description" content="Privacy Policy for Lughat, the offline-first Urdu–English dictionary app. Learn how we handle your data." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & base ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --seed:        #0F7A6A;
+      --primary:     #006A5B;
+      --primary-c:   #CFEAE4;
+      --secondary:   #4A6360;
+      --surface:     #F4FBF9;
+      --surface-2:   #E6F4F1;
+      --on-surface:  #191C1C;
+      --outline:     #6F7978;
+      --outline-v:   #BEC9C7;
+      --error:       #BA1A1A;
+      --radius-card: 24px;
+      --radius-chip: 10px;
+      --transition:  0.25s ease;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary:    #86D3C5;
+        --primary-c:  #004E42;
+        --secondary:  #A1CCC6;
+        --surface:    #191C1C;
+        --surface-2:  #1F2424;
+        --on-surface: #E0E3E2;
+        --outline:    #909A98;
+        --outline-v:  #394543;
+      }
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--surface);
+      color: var(--on-surface);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ───────────────────────────────────────────────────────── */
+    .page-wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── Hero header ──────────────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, var(--primary-c) 0%, var(--surface-2) 100%);
+      border-bottom: 1px solid var(--outline-v);
+      padding: 60px 24px 48px;
+      text-align: center;
+    }
+
+    .hero-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .logo-badge {
+      width: 52px;
+      height: 52px;
+      background: var(--primary);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+
+    .logo-name {
+      text-align: left;
+    }
+
+    .logo-name .urdu {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      display: block;
+      line-height: 1.2;
+    }
+
+    .logo-name .latin {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--outline);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      font-size: clamp(24px, 5vw, 36px);
+      font-weight: 700;
+      color: var(--on-surface);
+      margin-bottom: 12px;
+    }
+
+    .hero .meta {
+      font-size: 14px;
+      color: var(--outline);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .meta-pill {
+      background: var(--surface);
+      border: 1px solid var(--outline-v);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 13px;
+      color: var(--outline);
+    }
+
+    /* ── Quick summary bar ────────────────────────────────────────────── */
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin: 40px 0;
+    }
+
+    .summary-card {
+      background: var(--surface-2);
+      border: 1px solid var(--outline-v);
+      border-radius: var(--radius-card);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .summary-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.08);
+    }
+
+    .summary-card .icon {
+      font-size: 28px;
+    }
+
+    .summary-card .label {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--on-surface);
+    }
+
+    .summary-card .desc {
+      font-size: 13px;
+      color: var(--outline);
+      line-height: 1.5;
+    }
+
+    /* ── TOC ──────────────────────────────────────────────────────────── */
+    .toc {
+      background: var(--surface-2);
+      border: 1px solid var(--outline-v);
+      border-radius: var(--radius-card);
+      padding: 24px 28px;
+      margin-bottom: 40px;
+    }
+
+    .toc h2 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--outline);
+      margin-bottom: 12px;
+    }
+
+    .toc ol {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .toc a {
+      font-size: 15px;
+      color: var(--primary);
+    }
+
+    /* ── Sections ─────────────────────────────────────────────────────── */
+    .section {
+      margin-bottom: 48px;
+      scroll-margin-top: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .section-number {
+      width: 36px;
+      height: 36px;
+      background: var(--primary-c);
+      color: var(--primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .section h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--on-surface);
+    }
+
+    .section p {
+      color: var(--on-surface);
+      margin-bottom: 14px;
+    }
+
+    .section p:last-child { margin-bottom: 0; }
+
+    /* ── Info boxes ───────────────────────────────────────────────────── */
+    .info-box {
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .info-box .box-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .info-box p { margin: 0; font-size: 15px; }
+
+    .info-box.green {
+      background: color-mix(in srgb, var(--primary) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    .info-box.amber {
+      background: color-mix(in srgb, #D97706 8%, transparent);
+      border: 1px solid color-mix(in srgb, #D97706 20%, transparent);
+    }
+
+    /* ── Data table ───────────────────────────────────────────────────── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--outline-v);
+      margin: 16px 0;
+    }
+
+    .data-table th {
+      background: var(--surface-2);
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--outline);
+      text-align: left;
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      font-size: 14px;
+      border-top: 1px solid var(--outline-v);
+      vertical-align: top;
+    }
+
+    .data-table tr:hover td { background: var(--surface-2); }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: var(--radius-chip);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-green {
+      background: color-mix(in srgb, var(--primary) 15%, transparent);
+      color: var(--primary);
+    }
+
+    .badge-gray {
+      background: var(--surface-2);
+      color: var(--outline);
+      border: 1px solid var(--outline-v);
+    }
+
+    /* ── Divider ──────────────────────────────────────────────────────── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--outline-v);
+      margin: 48px 0;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      font-size: 13px;
+      color: var(--outline);
+      padding-top: 40px;
+      border-top: 1px solid var(--outline-v);
+    }
+
+    .footer a { color: var(--primary); }
+
+    /* ── Responsive ───────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 32px; }
+      .summary-bar { grid-template-columns: 1fr 1fr; }
+      .data-table { font-size: 13px; }
+      .data-table th, .data-table td { padding: 10px 12px; }
+    }
+
+    @media (max-width: 400px) {
+      .summary-bar { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Hero ─────────────────────────────────────────────────────────── -->
+  <header class="hero">
+    <div class="hero-logo">
+      <div class="logo-badge">📖</div>
+      <div class="logo-name">
+        <span class="urdu">لغت</span>
+        <span class="latin">Lughat</span>
+      </div>
+    </div>
+    <h1>Privacy Policy</h1>
+    <div class="meta">
+      <span class="meta-pill">🗓 Effective: July 24, 2026</span>
+      <span class="meta-pill">📱 Urdu ⇄ English Dictionary</span>
+    </div>
+  </header>
+
+  <div class="page-wrap">
+
+    <!-- ── At-a-glance cards ────────────────────────────────────────────── -->
+    <div class="summary-bar" role="region" aria-label="Privacy at a glance">
+      <div class="summary-card">
+        <div class="icon">🔒</div>
+        <div class="label">No Account Required</div>
+        <div class="desc">Lughat works fully without signing up or logging in.</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon">📵</div>
+        <div class="label">No Data Collected</div>
+        <div class="desc">We do not collect, transmit, or sell any personal information.</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon">📦</div>
+        <div class="label">Stored Locally</div>
+        <div class="desc">Your favorites, recents, and settings stay on your device only.</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon">🌐</div>
+        <div class="label">Minimal Network Use</div>
+        <div class="desc">The internet is used only to look up words you explicitly search for.</div>
+      </div>
+    </div>
+
+    <!-- ── Table of Contents ─────────────────────────────────────────────── -->
+    <nav class="toc" aria-label="Table of Contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#s1">Who We Are</a></li>
+        <li><a href="#s2">Information We Do Not Collect</a></li>
+        <li><a href="#s3">Data Stored on Your Device</a></li>
+        <li><a href="#s4">Network Requests</a></li>
+        <li><a href="#s5">Third-Party Services</a></li>
+        <li><a href="#s6">Children's Privacy</a></li>
+        <li><a href="#s7">Your Rights &amp; Controls</a></li>
+        <li><a href="#s8">Changes to This Policy</a></li>
+        <li><a href="#s9">Contact Us</a></li>
+      </ol>
+    </nav>
+
+    <!-- ── 1. Who We Are ─────────────────────────────────────────────────── -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <div class="section-number">1</div>
+        <h2>Who We Are</h2>
+      </div>
+      <p>
+        Lughat is an offline-first Urdu ⇄ English dictionary application developed and
+        maintained by <strong>Ateeq</strong>. The app is designed to help readers, learners,
+        and writers look up words in both Urdu and English — even without an internet
+        connection.
+      </p>
+      <p>
+        This Privacy Policy explains how Lughat handles information in connection with
+        your use of the app. By using Lughat, you agree to the practices described below.
+      </p>
+    </section>
+
+    <!-- ── 2. Information We Do Not Collect ──────────────────────────────── -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <div class="section-number">2</div>
+        <h2>Information We Do Not Collect</h2>
+      </div>
+
+      <div class="info-box green">
+        <div class="box-icon">✅</div>
+        <p><strong>Lughat does not collect, store, or transmit any personal information to us or any third party.</strong> There are no analytics libraries, advertising SDKs, or crash-reporting services embedded in the app.</p>
+      </div>
+
+      <p>Specifically, we do <em>not</em> collect:</p>
+      <table class="data-table" aria-label="Information not collected">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Examples</th>
+            <th>Collected?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Personal identifiers</td>
+            <td>Name, email address, phone number</td>
+            <td><span class="badge badge-green">Never</span></td>
+          </tr>
+          <tr>
+            <td>Device identifiers</td>
+            <td>IMEI, advertising ID, device fingerprint</td>
+            <td><span class="badge badge-green">Never</span></td>
+          </tr>
+          <tr>
+            <td>Location data</td>
+            <td>GPS, IP-based location, region</td>
+            <td><span class="badge badge-green">Never</span></td>
+          </tr>
+          <tr>
+            <td>Usage analytics</td>
+            <td>Screen views, button taps, session duration</td>
+            <td><span class="badge badge-green">Never</span></td>
+          </tr>
+          <tr>
+            <td>Crash reports</td>
+            <td>Stack traces, error logs sent to a server</td>
+            <td><span class="badge badge-green">Never</span></td>
+          </tr>
+          <tr>
+            <td>Financial information</td>
+            <td>Payment details, purchase history</td>
+            <td><span class="badge badge-green">Never</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── 3. Data Stored on Your Device ─────────────────────────────────── -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <div class="section-number">3</div>
+        <h2>Data Stored on Your Device</h2>
+      </div>
+      <p>
+        Lughat stores a small amount of data <strong>locally on your device</strong> using
+        Android's / iOS's sandboxed <code>SharedPreferences</code> storage. This data
+        never leaves your device and is not accessible to us.
+      </p>
+
+      <table class="data-table" aria-label="Data stored on device">
+        <thead>
+          <tr>
+            <th>What is stored</th>
+            <th>Purpose</th>
+            <th>Leaves device?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Favorite words</td>
+            <td>So you can access saved words offline</td>
+            <td><span class="badge badge-green">No</span></td>
+          </tr>
+          <tr>
+            <td>Recent searches</td>
+            <td>Quick access to words you looked up previously</td>
+            <td><span class="badge badge-green">No</span></td>
+          </tr>
+          <tr>
+            <td>Word of the Day history</td>
+            <td>Deterministic daily word based on calendar date</td>
+            <td><span class="badge badge-green">No</span></td>
+          </tr>
+          <tr>
+            <td>Learned &amp; review words</td>
+            <td>Spaced-repetition review schedule</td>
+            <td><span class="badge badge-green">No</span></td>
+          </tr>
+          <tr>
+            <td>API word cache</td>
+            <td>Offline access to previously looked-up definitions</td>
+            <td><span class="badge badge-green">No</span></td>
+          </tr>
+          <tr>
+            <td>App settings</td>
+            <td>Theme preference (light/dark/system)</td>
+            <td><span class="badge badge-green">No</span></td>
+          </tr>
+          <tr>
+            <td>Onboarding flag</td>
+            <td>Tracks whether first-run onboarding has been shown</td>
+            <td><span class="badge badge-green">No</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        You can clear this data at any time from <strong>Settings → Clear word cache</strong>
+        or by uninstalling the app.
+      </p>
+    </section>
+
+    <!-- ── 4. Network Requests ────────────────────────────────────────────── -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <div class="section-number">4</div>
+        <h2>Network Requests</h2>
+      </div>
+      <p>
+        Lughat is designed to work offline. When you are connected to the internet and
+        explicitly search for a word, the app makes a request to the
+        <strong>Free Dictionary API</strong> (<a href="https://freedictionaryapi.com" target="_blank" rel="noopener">freedictionaryapi.com</a>)
+        to retrieve its definition.
+      </p>
+
+      <div class="info-box amber">
+        <div class="box-icon">ℹ️</div>
+        <p>The search query (the word itself) is included in this API request as part of the URL. The Free Dictionary API is a public, open service. Please review their privacy policy if you have concerns about their data handling.</p>
+      </div>
+
+      <p>
+        Lughat itself does not receive or record these requests. The definition response is
+        cached locally on your device for future offline use. No other outbound network
+        connections are made by the app.
+      </p>
+    </section>
+
+    <!-- ── 5. Third-Party Services ────────────────────────────────────────── -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <div class="section-number">5</div>
+        <h2>Third-Party Services</h2>
+      </div>
+      <p>Lughat uses the following third-party libraries and services:</p>
+
+      <table class="data-table" aria-label="Third-party services">
+        <thead>
+          <tr>
+            <th>Service / Library</th>
+            <th>Purpose</th>
+            <th>Data sent to them</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Free Dictionary API</strong><br><small>freedictionaryapi.com</small></td>
+            <td>Word definitions, translations, examples</td>
+            <td>The searched word (in URL)</td>
+          </tr>
+          <tr>
+            <td><strong>flutter_tts</strong></td>
+            <td>Text-to-speech pronunciation of Urdu words</td>
+            <td>Uses the device's built-in TTS engine; no data leaves your device through this library</td>
+          </tr>
+          <tr>
+            <td><strong>connectivity_plus</strong></td>
+            <td>Detecting online / offline status</td>
+            <td>None — reads device network state only</td>
+          </tr>
+          <tr>
+            <td><strong>shared_preferences</strong></td>
+            <td>Local storage on device</td>
+            <td>None — local only</td>
+          </tr>
+          <tr>
+            <td><strong>provider</strong></td>
+            <td>App state management</td>
+            <td>None — in-memory only</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        We do not integrate any advertising networks, social login providers, analytics
+        platforms, or crash-reporting services.
+      </p>
+    </section>
+
+    <!-- ── 6. Children's Privacy ──────────────────────────────────────────── -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <div class="section-number">6</div>
+        <h2>Children's Privacy</h2>
+      </div>
+      <p>
+        Lughat does not collect personal information from anyone, including children
+        under the age of 13 (or the applicable age of digital consent in your jurisdiction).
+        Because no personal data is collected at all, Lughat is safe for use by children
+        under parental or guardian supervision.
+      </p>
+    </section>
+
+    <!-- ── 7. Your Rights & Controls ─────────────────────────────────────── -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <div class="section-number">7</div>
+        <h2>Your Rights &amp; Controls</h2>
+      </div>
+      <p>
+        Since Lughat does not collect any personal data, there is nothing held by us
+        to access, correct, export, or delete. All data that exists is stored locally on
+        your device and is entirely within your control.
+      </p>
+      <p>You can manage your data directly in the app:</p>
+      <ul style="padding-left: 20px; margin: 12px 0; display: flex; flex-direction: column; gap: 8px;">
+        <li><strong>Clear recent searches</strong> — Search screen → "Clear" button</li>
+        <li><strong>Remove favorites</strong> — Saved tab → swipe to delete</li>
+        <li><strong>Clear word cache</strong> — Settings → Offline Data → "Clear word cache"</li>
+        <li><strong>Delete all data</strong> — Uninstalling the app removes all locally stored data</li>
+      </ul>
+    </section>
+
+    <!-- ── 8. Changes to This Policy ──────────────────────────────────────── -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <div class="section-number">8</div>
+        <h2>Changes to This Policy</h2>
+      </div>
+      <p>
+        We may update this Privacy Policy from time to time. When we do, the
+        "Effective" date at the top of this page will be updated. We encourage you to
+        review this policy periodically. Continued use of the app after any changes
+        constitutes your acceptance of the updated policy.
+      </p>
+      <p>
+        As long as Lughat remains a free, offline-first dictionary with no user accounts,
+        the fundamental commitment — <em>we collect no personal data</em> — will
+        not change.
+      </p>
+    </section>
+
+    <!-- ── 9. Contact ──────────────────────────────────────────────────────── -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <div class="section-number">9</div>
+        <h2>Contact Us</h2>
+      </div>
+      <p>
+        If you have questions or concerns about this Privacy Policy, please reach out:
+      </p>
+      <div class="info-box green" style="margin-top: 16px;">
+        <div class="box-icon">✉️</div>
+        <p>
+          <strong>Developer:</strong> Ateeq<br />
+          <strong>App:</strong> Lughat — Urdu ⇄ English Dictionary<br />
+          <strong>Platform:</strong> Android &amp; iOS
+        </p>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ── Footer ────────────────────────────────────────────────────────── -->
+    <footer class="footer">
+      <p>
+        © 2026 Lughat. All rights reserved.<br />
+        Dictionary data from
+        <a href="https://freedictionaryapi.com" target="_blank" rel="noopener">Free Dictionary API</a>
+        (Wiktionary, CC BY-SA 4.0).<br />
+        <br />
+        This page was last updated on <strong>July 24, 2026</strong>.
+      </p>
+    </footer>
+
+  </div><!-- /.page-wrap -->
+</body>
+</html>

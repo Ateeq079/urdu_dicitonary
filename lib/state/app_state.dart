@@ -1,141 +1,91 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 
 import '../models/seed_word.dart';
+import '../models/word_ref.dart';
 import '../services/seed_repository.dart';
 import '../services/storage_service.dart';
+import 'challenge_state.dart';
+import 'favorites_state.dart';
+import 'recents_state.dart';
+import 'word_of_day_state.dart';
 
-/// A saved/searched item. [lang] is the language to look the word up in.
-class WordRef {
-  final String word;
-  final String lang; // 'en' or 'ur'
-  final String gloss;
+// WordRef is defined in lib/models/word_ref.dart and re-exported here
+// so all screens that import app_state.dart still resolve it.
+export '../models/word_ref.dart';
 
-  const WordRef({required this.word, required this.lang, this.gloss = ''});
-
-  Map<String, dynamic> toJson() =>
-      {'word': word, 'lang': lang, 'gloss': gloss};
-
-  factory WordRef.fromJson(Map<String, dynamic> j) => WordRef(
-        word: (j['word'] as String?) ?? '',
-        lang: (j['lang'] as String?) ?? 'en',
-        gloss: (j['gloss'] as String?) ?? '',
-      );
-
-  String get key => '$lang:${word.toLowerCase()}';
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// AppState — thin facade composing focused notifiers
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// ARCHITECTURE NOTE:
+// The actual state lives in FavoritesState, RecentsState, WordOfDayState, and
+// ChallengeState (all provided separately via MultiProvider). AppState here is
+// a backwards-compatible façade so existing `context.watch<AppState>()` callers
+// don't need to be rewritten all at once. It delegates every call to the
+// appropriate focused notifier and re-fires notifyListeners() when any of them
+// change.
+//
+// New code should prefer reading the specific notifier directly, e.g.:
+//   context.watch<FavoritesState>().favorites
+// rather than going through AppState.
 
 class AppState extends ChangeNotifier {
-  AppState(this._storage, this._seed) {
-    _load();
+  AppState(
+    StorageService storage,
+    SeedRepository seed, {
+    required FavoritesState favorites,
+    required RecentsState recents,
+    required WordOfDayState wordOfDay,
+    required ChallengeState challenge,
+  })  : _favorites = favorites,
+        _recents = recents,
+        _wordOfDay = wordOfDay,
+        _challenge = challenge,
+        _seed = seed {
+    // Bubble sub-notifier changes up through AppState so any
+    // context.watch<AppState>() rebuild still works.
+    _favorites.addListener(notifyListeners);
+    _recents.addListener(notifyListeners);
+    _wordOfDay.addListener(notifyListeners);
+    _challenge.addListener(notifyListeners);
   }
 
-  final StorageService _storage;
+  final FavoritesState _favorites;
+  final RecentsState _recents;
+  final WordOfDayState _wordOfDay;
+  final ChallengeState _challenge;
   final SeedRepository _seed;
 
-  static const _kFavorites = 'favorites';
-  static const _kRecents = 'recents';
-  static const _kLearned = 'learned';
-
-  List<WordRef> _favorites = [];
-  List<WordRef> _recents = [];
-  Set<String> _learned = {}; // seed urdu words marked learned
-
-  List<WordRef> get favorites => List.unmodifiable(_favorites);
-  List<WordRef> get recents => List.unmodifiable(_recents);
-
+  // ── Seed access ─────────────────────────────────────────────────────────
   SeedRepository get seed => _seed;
 
-  void _load() {
-    _favorites = _storage
-        .getStringList(_kFavorites)
-        .map((s) => WordRef.fromJson(jsonDecode(s) as Map<String, dynamic>))
-        .toList();
-    _recents = _storage
-        .getStringList(_kRecents)
-        .map((s) => WordRef.fromJson(jsonDecode(s) as Map<String, dynamic>))
-        .toList();
-    _learned = _storage.getStringList(_kLearned).toSet();
-  }
+  // ── Favorites delegates ─────────────────────────────────────────────────
+  List<WordRef> get favorites => _favorites.favorites;
+  bool isFavorite(WordRef ref) => _favorites.isFavorite(ref);
+  void toggleFavorite(WordRef ref) => _favorites.toggleFavorite(ref);
+  void removeFavorite(WordRef ref) => _favorites.removeFavorite(ref);
 
-  // ---- Favorites ----
-  bool isFavorite(WordRef ref) => _favorites.any((f) => f.key == ref.key);
+  // ── Recents delegates ──────────────────────────────────────────────────
+  List<WordRef> get recents => _recents.recents;
+  void addRecent(WordRef ref) => _recents.addRecent(ref);
+  void clearRecents() => _recents.clearRecents();
 
-  void toggleFavorite(WordRef ref) {
-    if (isFavorite(ref)) {
-      _favorites.removeWhere((f) => f.key == ref.key);
-    } else {
-      _favorites.insert(0, ref);
-    }
-    _persistFavorites();
-    notifyListeners();
-  }
+  // ── Word of the Day delegates ───────────────────────────────────────────
+  SeedWord get wordOfDay => _wordOfDay.wordOfDay;
 
-  void removeFavorite(WordRef ref) {
-    _favorites.removeWhere((f) => f.key == ref.key);
-    _persistFavorites();
-    notifyListeners();
-  }
+  // ── Challenge / spaced-repetition delegates ─────────────────────────────
+  List<SeedWord> get challengeWords => _challenge.challengeWords;
+  bool isLearned(SeedWord w) => _challenge.isLearned(w);
+  void toggleLearned(SeedWord w) => _challenge.toggleLearned(w);
+  int get learnedTotal => _challenge.learnedTotal;
+  int get challengeLearnedToday => _challenge.challengeLearnedToday;
 
-  void _persistFavorites() => _storage.setStringList(
-      _kFavorites, _favorites.map((f) => jsonEncode(f.toJson())).toList());
-
-  // ---- Recent searches ----
-  void addRecent(WordRef ref) {
-    _recents.removeWhere((r) => r.key == ref.key);
-    _recents.insert(0, ref);
-    if (_recents.length > 30) _recents = _recents.sublist(0, 30);
-    _storage.setStringList(
-        _kRecents, _recents.map((r) => jsonEncode(r.toJson())).toList());
-    notifyListeners();
-  }
-
-  void clearRecents() {
-    _recents = [];
-    _storage.remove(_kRecents);
-    notifyListeners();
-  }
-
-  // ---- Word of the Day (deterministic per calendar day) ----
-  SeedWord get wordOfDay {
-    final words = _seed.words;
-    if (words.isEmpty) {
-      return const SeedWord(
-          urdu: '', roman: '', english: '', category: 'daily');
-    }
-    return words[_daySeed() % words.length];
-  }
-
-  // ---- Daily Challenge (5 words per day) ----
-  List<SeedWord> get challengeWords {
-    final words = _seed.words;
-    if (words.isEmpty) return const [];
-    final start = (_daySeed() * 5) % words.length;
-    return List.generate(5, (i) => words[(start + i) % words.length]);
-  }
-
-  bool isLearned(SeedWord w) => _learned.contains(w.urdu);
-
-  void toggleLearned(SeedWord w) {
-    if (_learned.contains(w.urdu)) {
-      _learned.remove(w.urdu);
-    } else {
-      _learned.add(w.urdu);
-    }
-    _storage.setStringList(_kLearned, _learned.toList());
-    notifyListeners();
-  }
-
-  int get learnedTotal => _learned.length;
-
-  int get challengeLearnedToday =>
-      challengeWords.where((w) => _learned.contains(w.urdu)).length;
-
-  /// Days since epoch — changes once per calendar day in local time.
-  int _daySeed() {
-    final now = DateTime.now();
-    final midnight = DateTime(now.year, now.month, now.day);
-    return midnight.millisecondsSinceEpoch ~/ Duration.millisecondsPerDay;
+  @override
+  void dispose() {
+    _favorites.removeListener(notifyListeners);
+    _recents.removeListener(notifyListeners);
+    _wordOfDay.removeListener(notifyListeners);
+    _challenge.removeListener(notifyListeners);
+    super.dispose();
   }
 }

@@ -13,6 +13,7 @@ class FavoritesScreen extends StatelessWidget {
     final state = context.watch<AppState>();
     final favs = state.favorites;
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Favorites')),
@@ -48,20 +49,23 @@ class FavoritesScreen extends StatelessWidget {
                   key: ValueKey(f.key),
                   direction: DismissDirection.endToStart,
                   background: Container(
-                    color: Colors.redAccent,
+                    color: scheme.error,
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 24),
-                    child: const Icon(Icons.delete_outline_rounded,
-                        color: Colors.white),
+                    child: Icon(Icons.delete_outline_rounded,
+                        color: scheme.onError),
                   ),
                   onDismissed: (_) =>
                       context.read<AppState>().removeFavorite(f),
                   child: ListTile(
-                    leading: const Icon(Icons.favorite, color: Colors.redAccent),
+                    leading: Icon(Icons.favorite, color: scheme.error),
                     title: f.lang == 'ur'
-                        ? UrduText(f.word,
+                        ? UrduText(
+                            f.word,
                             textAlign: TextAlign.left,
-                            style: const TextStyle(fontSize: 24))
+                            semanticsLabel: f.gloss.isNotEmpty ? f.gloss : f.word,
+                            style: const TextStyle(fontSize: 24),
+                          )
                         : Text(f.word,
                             style: const TextStyle(fontSize: 18)),
                     subtitle: f.gloss.isEmpty
